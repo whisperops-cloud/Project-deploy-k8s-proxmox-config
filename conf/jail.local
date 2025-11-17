@@ -1,0 +1,88 @@
+###############################################################################
+#                               Fail2Ban Jail Configuration
+# Ce fichier contient les jails actives pour Fail2Ban.
+# Chaque jail surveille un service ou un ensemble de logs et prend des mesures
+# contre les IPs qui échouent trop souvent à se connecter.
+###############################################################################
+
+# =====================
+# Paramètres par défaut
+# =====================
+[DEFAULT]
+# Durée par défaut d'un bannissement
+bantime = 24h
+
+# Intervalle de temps pour compter les échecs (en secondes ou minutes)
+findtime = 10m
+
+# Nombre maximal de tentatives autorisées dans le 'findtime'
+maxretry = 3
+
+# IPs à ignorer (localhost par défaut)
+ignoreip = 127.0.0.1/8
+
+# Backend utilisé pour lire les logs : auto choisira le meilleur
+backend = auto
+
+# Action par défaut : bloquer les ports de la jail avec iptables
+banaction = iptables-multiport
+
+###############################################################################
+# Jail SSH
+###############################################################################
+[sshd]
+# Activation de la jail SSH
+enabled = true
+
+# Port surveillé (SSH standard)
+port = ssh
+
+# Filtre utilisé pour détecter les tentatives échouées
+filter = sshd
+
+# Fichier de log à surveiller
+logpath = /var/log/auth.log
+
+###############################################################################
+# Jail Proxmox
+###############################################################################
+[proxmox]
+# Activation de la jail Proxmox
+enabled = true
+
+# Filtre personnalisé pour Proxmox
+filter  = proxmox
+
+# Utilisation du backend systemd pour lire les journaux
+backend = systemd
+
+# Journal spécifique à surveiller dans systemd
+journalmatch = _SYSTEMD_UNIT=pvedaemon.service
+
+# Nombre de tentatives avant ban
+maxretry = 3
+
+# Durée du bannissement pour Proxmox (1 heure)
+bantime = 3600
+
+###############################################################################
+# Jail Recidive (ban global)
+###############################################################################
+[recidive]
+# Activation de la jail recidive
+enabled  = true
+
+# Fichier de log Fail2Ban à surveiller (toutes les bans)
+logpath  = /var/log/fail2ban.log
+
+# Action : bloquer l'IP sur tous les ports
+banaction = iptables-allports
+
+# Durée du bannissement longue (1 semaine)
+bantime  = 1w          # 1 semaine
+
+# Intervalle pour compter les bans cumulés
+findtime = 1d          # sur 1 jour
+
+# Nombre de bans cumulés sur différents jails pour déclencher recidive
+#maxretry = 5           # 5 bans cumulés

@@ -1,0 +1,35 @@
+- hosts: pve
+  become: true
+  tasks:
+    - name: Copier fichiers de conf
+      copy:
+        src: "../conf"
+        dest: "/tmp/"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Copier scripts
+      copy:
+        src: "../sh/"
+        dest: "/usr/local/bin/"
+        mode: "0750"
+
+    - name: Lancer la configuration sécurisation - changement des répositories
+      command: "/usr/local/bin/01-Repo-fix.sh"
+
+    - name: Lancer la configuration sécurisation - création d'administrateur pam
+      command: "/usr/local/bin/02_create_pam_user.sh"
+    
+    - name: Lancer la configuration sécurisation - sécurisation des ports de connexion
+      command: "/usr/local/bin/03_secure_access.sh"
+
+- hosts: pve_master
+  become: true
+  tasks:
+    - name: Lancer la configuration sécurisation - création d'administrateur pve
+      command: "/usr/local/bin/04_create_pve_user.sh"
+
+    - name: Lancer la configuration sécurisation - création d'environement
+      command: "/usr/local/bin/05_create_env.sh"
+    

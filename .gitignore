@@ -1,0 +1,31 @@
+# --- TERRAFORM WORKING DIRECTORY ---
+.terraform/
+.terraform.lock.hcl
+
+# --- STATE FILES (sensibles / ne jamais commit) ---
+terraform.tfstate
+terraform.tfstate.backup
+*.tfstate
+*.tfstate.*
+
+# --- PLAN FILES ---
+*.tfplan
+
+# --- CRÉDENCIALS TEMPORAIRES / EXPORTS ---
+*.pem
+*.key
+*.crt
+*.creds
+secrets.auto.tfvars
+*.auto.tfvars
+*.tfvars.json
+
+# --- EDITOR / OS NOISE ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# --- Ansible ---
+
+inventory.ini
