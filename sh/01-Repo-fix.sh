@@ -85,7 +85,7 @@ log "Mise à jour des index APT..."
 apt update -y
 
 log "Mise à niveau complète du système..."
-apt full-upgrade -y
+apt upgrade -y
 
 log "Système à jour."
 
