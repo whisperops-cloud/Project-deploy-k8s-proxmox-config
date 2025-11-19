@@ -13,7 +13,7 @@ resource "null_resource" "configure_pve" {
   provisioner "local-exec" {
     environment = {
       ANSIBLE_FORCE_COLOR     = "true"
-      ANSIBLE_STDOUT_CALLBACK = "yaml"
+      ANSIBLE_STDOUT_CALLBACK = "debug"
     }
 
     command = <<EOT
