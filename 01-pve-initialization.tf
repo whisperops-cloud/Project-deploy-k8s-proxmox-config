@@ -11,12 +11,18 @@ resource "null_resource" "configure_pve" {
   }
 
   provisioner "local-exec" {
+    environment = {
+      ANSIBLE_FORCE_COLOR     = "true"
+      ANSIBLE_STDOUT_CALLBACK = "yaml"
+    }
+
     command = <<EOT
 ansible-playbook \
   -i ${path.module}/inventory.ini \
   playbooks/pve_setup.yaml \
-  --private-key ${var.ssh_private_key} \
-  -u ${var.ssh_user}
+  --private-key "${var.ssh_private_key}" \
+  -u "${var.ssh_user}" \
+  -vvv
 EOT
   }
 }
