@@ -115,11 +115,31 @@
         mode: "0644"
 
     # ──────────────────────────────────────────────────────────────
-    # Scripts post-install
+    # Scripts tunning de l'environement des membres du cluster
+    # durcissement ssh + fail2ban + modification des ports par défaut
+    # création de d'administrateur pam
     # ──────────────────────────────────────────────────────────────
 
     - name: Run script create PAM user
-      command: "/usr/local/bin/02_create_pam_user.sh"
+      command: "/usr/local/bin/01_create_pam_user.sh"
 
     - name: Run script secure access
-      command: "/usr/local/bin/03_secure_access.sh"
+      command: "/usr/local/bin/02_secure_access.sh"
+
+
+- hosts: pve_master
+  become: true
+  tasks:
+     
+   # ──────────────────────────────────────────────────────────────
+   # Scripts tunning de l'environement du master du cluster
+   # création de d'administrateur pam
+   # création d'user PVE et API token associé
+   # création des pools et templates pour installation de kubernetes
+   # ──────────────────────────────────────────────────────────────
+
+    - name: Run script create PVE user
+      command: "/usr/local/bin/03_create_pve_user.sh"
+
+    - name: Run script create environement
+      command: "/usr/local/bin/04_create_env.sh"  
