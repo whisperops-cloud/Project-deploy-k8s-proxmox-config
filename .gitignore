@@ -29,3 +29,6 @@ Thumbs.db
 # --- Ansible ---
 
 inventory.ini
+
+# --- Vscodium ---
+.vscode/

@@ -1,35 +1,125 @@
 - hosts: pve
   become: true
+  vars:
+    archive_dir: /root/archive_no_sub
+    src_dir: ../sources
+
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+    DEBCONF_NONINTERACTIVE_SEEN: "true"
+    NEEDRESTART_MODE: "a"
+
   tasks:
-    - name: Copier fichiers de conf
+
+    # ──────────────────────────────────────────────────────────────
+    # Copie des fichiers locaux
+    # ──────────────────────────────────────────────────────────────
+
+    - name: Copier fichiers de configuration
       copy:
-        src: "../conf"
-        dest: "/tmp/"
+        src: "../conf/"
+        dest: "/etc/myconf/"
         owner: root
         group: root
         mode: "0644"
 
-    - name: Copier scripts
+    - name: Copier scripts dans /usr/local/bin
       copy:
         src: "../sh/"
         dest: "/usr/local/bin/"
         mode: "0750"
 
-    - name: Lancer la configuration sécurisation - changement des répositories
-      command: "/usr/local/bin/01-Repo-fix.sh"
+    # ──────────────────────────────────────────────────────────────
+    # Archivage des sources APT existantes
+    # ──────────────────────────────────────────────────────────────
 
-    - name: Lancer la configuration sécurisation - création d'administrateur pam
+    - name: Ensure archive directory exists
+      ansible.builtin.file:
+        path: "{{ archive_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Gather existing apt source files
+      ansible.builtin.find:
+        paths: "/etc/apt/sources.list.d"
+        patterns: "*.list,*.sources"
+        file_type: file
+      register: existing_sources
+
+    - name: Archive existing sources
+      command: mv -- "{{ item.path }}" "{{ archive_dir }}/"
+      loop: "{{ existing_sources.files }}"
+      when: existing_sources.matched > 0
+      changed_when: true
+
+    # ──────────────────────────────────────────────────────────────
+    # Copie des nouvelles sources depuis le contrôleur
+    # ──────────────────────────────────────────────────────────────
+
+    - name: List sources present on control machine
+      set_fact:
+        controller_sources: >-
+          {{ lookup('fileglob', src_dir + '/*', wantlist=True)
+             | map('basename')
+             | list }}
+
+    - name: Deploy new apt source files
+      copy:
+        src: "{{ src_dir }}/{{ item }}"
+        dest: "/etc/apt/sources.list.d/{{ item }}"
+        owner: root
+        group: root
+        mode: "0644"
+      loop: "{{ controller_sources }}"
+
+    # ──────────────────────────────────────────────────────────────
+    # Mise à jour APT + dist-upgrade blindé
+    # ──────────────────────────────────────────────────────────────
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Safe apt upgrade (no dist upgrade)
+      apt:
+        upgrade: yes
+        autoremove: yes
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+
+
+    - name: Fix broken packages if needed
+      command: apt-get install -f -y
+
+    - name: Retry dpkg configure if needed
+      command: dpkg --configure -a
+
+    - name: Clean apt cache
+      apt:
+        autoclean: yes
+        autoremove: yes
+
+    # ──────────────────────────────────────────────────────────────
+    # Contexte non-interactif persistant
+    # ──────────────────────────────────────────────────────────────
+
+    - name: Ensure DEBIAN_FRONTEND noninteractive persistently
+      copy:
+        dest: /etc/profile.d/ansible-noninteractive.sh
+        content: |
+          export DEBIAN_FRONTEND=noninteractive
+          export DEBCONF_NONINTERACTIVE_SEEN=true
+          export NEEDRESTART_MODE=a
+        mode: "0644"
+
+    # ──────────────────────────────────────────────────────────────
+    # Scripts post-install
+    # ──────────────────────────────────────────────────────────────
+
+    - name: Run script create PAM user
       command: "/usr/local/bin/02_create_pam_user.sh"
-    
-    - name: Lancer la configuration sécurisation - sécurisation des ports de connexion
+
+    - name: Run script secure access
       command: "/usr/local/bin/03_secure_access.sh"
-
-- hosts: pve_master
-  become: true
-  tasks:
-    - name: Lancer la configuration sécurisation - création d'administrateur pve
-      command: "/usr/local/bin/04_create_pve_user.sh"
-
-    - name: Lancer la configuration sécurisation - création d'environement
-      command: "/usr/local/bin/05_create_env.sh"
-    

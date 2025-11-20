@@ -95,8 +95,8 @@ log "Système à jour."
 #   Patch UI Web
 ########################################
 
-patch_proxmox_repository
-update_proxmox_system
+#patch_proxmox_repository
+#update_proxmox_system
 patch_proxmox_web
 
 log "Terminé. Proxmox est maintenant en mode No-Sub + Dark UI."

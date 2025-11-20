@@ -3,7 +3,7 @@ set -euo pipefail
 
 ######################################################################
 # 🔐 SCRIPT DE DURCISSEMENT PROXMOX & SSH
-# - SSH : passe au sshd_config fourni (/tmp/conf/sshd_config)
+# - SSH : passe au sshd_config fourni (/etc/myconf/sshd_config)
 # - GUI Proxmox : 8006 → $NEW_GUI_PORT
 # - Fail2ban activé + logs stockés dans /home/adminpam/keyvault/
 # Auteur : Jérôme Quandalle
@@ -54,12 +54,12 @@ secure_ssh_port() {
 
     backup_file "$SSH_CONFIG"
 
-    if [[ ! -f /tmp/conf/sshd_config ]]; then
-        log "❌ ERREUR : /tmp/conf/sshd_config est manquant."
+    if [[ ! -f /etc/myconf/sshd_config ]]; then
+        log "❌ ERREUR : /etc/myconf/sshd_config est manquant."
         exit 1
     fi
 
-    cp /tmp/conf/sshd_config "$SSH_CONFIG"
+    cp /etc/myconf/sshd_config "$SSH_CONFIG"
     systemctl restart sshd
     log "✅ SSH configuré et redémarré"
 }
@@ -84,8 +84,8 @@ install_and_configure_fail2ban() {
     apt-get update -y
     apt-get install -y fail2ban
 
-    [[ -f /tmp/conf/jail.local ]] && cp /tmp/conf/jail.local /etc/fail2ban/jail.local && chmod 640 /etc/fail2ban/jail.local
-    [[ -f /tmp/conf/fail2ban-filter-proxmox.conf ]] && cp /tmp/conf/fail2ban-filter-proxmox.conf /etc/fail2ban/filter.d/proxmox.conf && chmod 644 /etc/fail2ban/filter.d/proxmox.conf
+    [[ -f /etc/myconf/jail.local ]] && cp /etc/myconf/jail.local /etc/fail2ban/jail.local && chmod 640 /etc/fail2ban/jail.local
+    [[ -f /etc/myconf/fail2ban-filter-proxmox.conf ]] && cp /etc/myconf/fail2ban-filter-proxmox.conf /etc/fail2ban/filter.d/proxmox.conf && chmod 644 /etc/fail2ban/filter.d/proxmox.conf
 
     systemctl daemon-reload
     systemctl enable --now fail2ban
