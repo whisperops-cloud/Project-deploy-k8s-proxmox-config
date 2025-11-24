@@ -1,0 +1,6 @@
+[Unit]
+Description=Proxmox honeypot logger (%i)
+
+[Service]
+ExecStart=/usr/local/bin/pve-port8006-logger.sh
+StandardInput=socket

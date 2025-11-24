@@ -59,7 +59,7 @@ create_template_UEFI() {
         --bios ovmf
 
     # Importer le disque principal qcow2
-    qm importdisk "$id" "${TEMPLATE_DIR}/${name}/${img_file}" "$STORAGE_POOL" --format qcow2
+    qm importdisk "$id" "${TEMPLATE_DIR}/${name}/${img_file}" "$STORAGE_POOL" --format raw
 
     # Attacher le disque importé en SCSI
     qm set "$id" --scsi0 "$STORAGE_POOL":vm-"$id"-disk-0,backup=off,iothread=1
@@ -88,18 +88,18 @@ create_template_UEFI() {
 # Templates 
 # create_template 9018 "template-ubuntu-18" "https://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img"
 # create_template 9020 "template-ubuntu-20" "https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img"
-# create_template 9022 "template-ubuntu-22" "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+create_template_UEFI 9022 "template-ubuntu-22" "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
 # create_template 9024 "template-ubuntu-24" "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
-# create_template 9013 "template-debian-13" "https://cloud.debian.org/images/cloud/trixie/daily/latest/debian-13-generic-amd64-daily.qcow2"
+create_template_UEFI 9013 "template-debian-13" "https://cloud.debian.org/images/cloud/trixie/daily/latest/debian-13-generic-amd64-daily.qcow2"
 # create_template 9010 "template-debian-10" "https://cloud.debian.org/images/cloud/buster/latest/debian-10-generic-amd64.qcow2"
 # create_template 9011 "template-debian-11" "https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-generic-amd64.qcow2"
 # create_template 9012 "template-debian-12" "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2"
 # create_template 9008 "template-alma-8" "https://repo.almalinux.org/almalinux/8/cloud/x86_64/images/AlmaLinux-8-GenericCloud-8.10-20240819.x86_64.qcow2"
-create_template_UEFI 9009 "template-alma-9" "https://repo.almalinux.org/almalinux/9/cloud/x86_64/images/AlmaLinux-9-GenericCloud-latest.x86_64.qcow2"
+#create_template_UEFI 9009 "template-alma-9" "https://repo.almalinux.org/almalinux/9/cloud/x86_64/images/AlmaLinux-9-GenericCloud-latest.x86_64.qcow2"
 create_template_UEFI 9010 "template-alma-10" "https://repo.almalinux.org/almalinux/10/cloud/x86_64/images/AlmaLinux-10-GenericCloud-latest.x86_64.qcow2"
 # create_template 9023 "template-amazon-23" "https://cdn.amazonlinux.com/al2023/os-images/2023.7.20250512.0/kvm/al2023-kvm-2023.7.20250512.0-kernel-6.1-x86_64.xfs.gpt.qcow2"
-create_template_UEFI 9099 "template-rocky-9" "https://download.rockylinux.org/pub/rocky/9.6/images/x86_64/Rocky-9-GenericCloud-Base.latest.x86_64.qcow2"
-create_template_UEFI 9100 "template-rocky-10" "https://download.rockylinux.org/pub/rocky/10/images/x86_64/Rocky-10-GenericCloud-Base.latest.x86_64.qcow2"
+# create_template_UEFI 9099 "template-rocky-9" "https://download.rockylinux.org/pub/rocky/9.6/images/x86_64/Rocky-9-GenericCloud-Base.latest.x86_64.qcow2"
+# create_template_UEFI 9100 "template-rocky-10" "https://download.rockylinux.org/pub/rocky/10/images/x86_64/Rocky-10-GenericCloud-Base.latest.x86_64.qcow2"
 
 
 # PoOlS
@@ -108,7 +108,7 @@ pvesh create /pools --poolid zone-kubernetes --comment "K8s VM"
 pvesh create /pools --poolid zone-application --comment "Other stack"
 
 pvesh set /pools/zone-templates --vm 9013
-pvesh set /pools/zone-templates --vm 9009
+pvesh set /pools/zone-templates --vm 9010
 pvesh set /pools/zone-templates --vm 9022
 
 # Bannière

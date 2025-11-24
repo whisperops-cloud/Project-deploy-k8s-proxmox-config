@@ -84,10 +84,33 @@ install_and_configure_fail2ban() {
     apt-get update -y
     apt-get install -y fail2ban
 
-    [[ -f /etc/myconf/jail.local ]] && cp /etc/myconf/jail.local /etc/fail2ban/jail.local && chmod 640 /etc/fail2ban/jail.local
-    [[ -f /etc/myconf/fail2ban-filter-proxmox.conf ]] && cp /etc/myconf/fail2ban-filter-proxmox.conf /etc/fail2ban/filter.d/proxmox.conf && chmod 644 /etc/fail2ban/filter.d/proxmox.conf
+    # --- Configuration fail2ban core ---
+    [[ -f /etc/myconf/jail.local ]] && \
+        cp /etc/myconf/jail.local /etc/fail2ban/jail.local && \
+        chmod 640 /etc/fail2ban/jail.local
 
+    [[ -f /etc/myconf/proxmox.conf ]] && \
+        cp /etc/myconf/proxmox.conf /etc/fail2ban/filter.d/proxmox.conf && \
+        chmod 644 /etc/fail2ban/filter.d/proxmox.conf
+
+    # --- Filtre honeypot port 8006 ---
+    [[ -f /etc/myconf/pve-port8006.conf ]] && \
+        cp /etc/myconf/pve-port8006.conf /etc/fail2ban/filter.d/pve-port8006.conf && \
+        chmod 644 /etc/fail2ban/filter.d/pve-port8006.conf
+
+    # --- Systemd socket + service ---
+    [[ -f /etc/myconf/pve-port8006.socket ]] && \
+        cp /etc/myconf/pve-port8006.socket /etc/systemd/system/pve-port8006.socket && \
+        chmod 644 /etc/systemd/system/pve-port8006.socket
+
+    [[ -f /etc/myconf/pve-port8006@.service ]] && \
+        cp /etc/myconf/pve-port8006@.service /etc/systemd/system/pve-port8006@.service && \
+        chmod 644 /etc/systemd/system/pve-port8006@.service
+    
+    touch /var/log/pve-port8006.log
+    chmod 644 /var/log/pve-port8006.log
     systemctl daemon-reload
+    systemctl enable --now pve-port8006.socket
     systemctl enable --now fail2ban
     systemctl restart fail2ban
     log "✅ Fail2ban actif et configuré"
@@ -134,8 +157,8 @@ echo
 ### === EXÉCUTION === ###
 log "🚀 Démarrage"
 secure_ssh_port
-install_and_configure_fail2ban
 change_pve_gui_port
+install_and_configure_fail2ban
 write_final_log
 log "✅ Terminé avec succès"
 
